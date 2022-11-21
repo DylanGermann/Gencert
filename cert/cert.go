@@ -2,8 +2,11 @@ package cert
 
 import (
 	"fmt"
+	"strings"
 	"time"
 )
+
+var MaxLenCourse = 20
 
 type Cert struct {
 	Course string
@@ -22,7 +25,10 @@ type Saver interface {
 }
 
 func New(course, name, date string) (*Cert, error) {
-	c := course
+	c, err := validateCourse(course)
+	if err != nil {
+		return nil, err
+	}
 	n := name
 	d := date
 
@@ -36,4 +42,25 @@ func New(course, name, date string) (*Cert, error) {
 		LabelDate:          fmt.Sprint("Date: ", d),
 	}
 	return cert, nil
+}
+func validateCourse(course string) (string, error) {
+	c, err := validateStr(course, MaxLenCourse)
+	if err != nil {
+		return "", err
+	}
+	if !strings.HasSuffix(c, " course") {
+		c = c + " course"
+	}
+	return strings.ToTitle(c), nil
+}
+
+func validateStr(str string, maxLen int) (string, error) {
+	c := strings.TrimSpace(str)
+	if len(c) <= 0 {
+		return c, fmt.Errorf("Invalid string. got='%s', len=%d", c, len(c))
+	} else if len(c) >= maxLen {
+		return c, fmt.Errorf("Invalid string. got='%s', len=%d", c, len(c))
+
+	}
+	return c, nil
 }
