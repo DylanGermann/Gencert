@@ -31,6 +31,12 @@ func (p *PdfSaver) Save(cert cert.Cert) error {
 	pdf.SetTitle(cert.LabelTitle, false)
 	pdf.AddPage()
 
+	// Background
+	background(pdf)
+
+	//Header
+	header(pdf, &cert)
+
 	//save file
 	filename := fmt.Sprintf("%v.pdf", cert.LabelTitle)
 	path := path.Join(p.OutputDir, filename)
@@ -40,4 +46,30 @@ func (p *PdfSaver) Save(cert cert.Cert) error {
 	}
 	fmt.Printf("Saved certificate to '%v'\n", path)
 	return nil
+}
+
+func header(pdf *gofpdf.Fpdf, c *cert.Cert) {
+	opts := gofpdf.ImageOptions{
+		ImageType: "png",
+	}
+	margin := 30.0
+	x := 0.0
+	imageWidth := 30.0
+	filename := "img/gopher.png"
+	pdf.ImageOptions(filename, x+margin, 20, imageWidth, 0, false, opts, 0, "")
+
+	pageWidth, _ := pdf.GetPageSize()
+	x = pageWidth - imageWidth
+	pdf.ImageOptions(filename, x-margin, 20, imageWidth, 0, false, opts, 0, "")
+
+	pdf.SetFont("Helvetica", "", 40)
+	pdf.WriteAligned(0, 50, c.LabelCompletion, "C")
+}
+
+func background(pdf *gofpdf.Fpdf) {
+	opts := gofpdf.ImageOptions{
+		ImageType: "png",
+	}
+	pageWidth, pageHeight := pdf.GetPageSize()
+	pdf.ImageOptions("img/background.png", 0, 0, pageWidth, pageHeight, false, opts, 0, "")
 }
