@@ -10,8 +10,14 @@ import (
 )
 
 func main() {
+	file := flag.String("file", "", "CSV file input")
 	outputType := flag.String("type", "pdf", "Output type of the certificate.")
 	flag.Parse()
+
+	if len(*file) <= 0 {
+		fmt.Printf("Invalid file. got ='%v'\n", *file)
+		os.Exit(1)
+	}
 
 	var saver cert.Saver
 	var err error
@@ -30,15 +36,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	c, err := cert.New("Golang programming", "Bob Dylan", "2018-06-21")
+	certs, err := cert.ParseCSV(*file)
 	if err != nil {
-		fmt.Printf("Error during certificate creation: %v", err)
+		fmt.Printf("Could not parse CSV: %v", err)
 		os.Exit(1)
 	}
 
-	err = saver.Save(*c)
-	if err != nil {
-		fmt.Printf("Error during pdf saving: %v", err)
-		os.Exit(1)
+	for _, c := range certs {
+		err = saver.Save(*c)
+		if err != nil {
+			fmt.Printf("Could not save Cert. got='%v'\n", err)
+		}
 	}
 }
